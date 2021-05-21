@@ -16,7 +16,7 @@ read_data <- function() {
   return(df)
 }
 
-
+# Clean data, and return cleaned dataset
 clean_data <- function(df, pos_neg = F) {
   df_cleaned <- df %>% 
     select(hotel_name, total_number_of_reviews, 
@@ -39,13 +39,24 @@ clean_data <- function(df, pos_neg = F) {
   return(df_cleaned)
 }
 
-tokenize <- function(df_cleaned, n = 1) {
+# Tokenize cleaned data and add total word count per hotel and per word
+tokenize_count <- function(df_cleaned, n = 1) {
   hotel_words <- df_cleaned %>% 
     unnest_tokens(word, review) %>% 
     count(hotel_name, word, sort = TRUE) %>% 
     ungroup() 
+  total_words <- hotel_words %>% 
+    group_by(hotel_name) %>% 
+    summarize(total = sum(n))
+  hotel_words <- left_join(hotel_words, total_words)
   return(hotel_words)
 }
 
-
+# Bind term frequency - inverse document frequency to data
+tfidf <- function(hotel_words) {
+  hotel_words <- hotel_words %>% 
+    bind_tf_idf(word, hotel_name, n) %>% 
+    select(-total) %>% 
+    arrange(desc(tf_idf))
+}
 
