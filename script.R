@@ -57,27 +57,30 @@ df_cleaned <- df %>%
 
 df_cleaned <- df_cleaned[1:1000,]
 
+# Tokenize
 hotel_words <- df_cleaned %>% 
   unnest_tokens(word, review) %>% 
   count(hotel_name, word, sort = TRUE) %>% 
   ungroup() 
 
+# Count total words
 total_words <- hotel_words %>% 
   group_by(hotel_name) %>% 
   summarize(total = sum(n))
+hotel_words <- left_join(hotel_words, total_words)            
 
-hotel_words <- left_join(hotel_words, total_words,)            
-
+# Word frequency distribution
 ggplot(hotel_words, aes(n/total, fill = hotel_name)) +
   geom_histogram(show.legend = FALSE) +
   xlim(NA, 0.0009) +
   facet_wrap(~hotel_name, ncol = 2, scales = "free_y")
 
+
+# Zipf's Law
 freq_by_rank <- hotel_words %>%
   group_by(hotel_name) %>%
   mutate(rank = row_number(),
          `term frequency` = n/total)
-
 freq_by_rank %>%
   ggplot(aes(rank, `term frequency`, color = hotel_name)) +
   geom_abline(intercept = -0.62, slope = -1.1, color = "gray50", linetype = 2) +
@@ -91,6 +94,8 @@ rank_subset <- freq_by_rank %>%
          rank > 10)
 lm(log10(`term frequency`) ~ log10(rank), data = rank_subset)
 
+
+# Bind tf-idf
 hotel_words <- hotel_words %>% 
   bind_tf_idf(word, hotel_name, n)
 
@@ -98,7 +103,7 @@ hotel_words %>%
   select(-total) %>%
   arrange(desc(tf_idf))
 
-
+# Most frequent words
 hotel_words %>%
   # anti_join(stop_words, by = "word") %>% 
   arrange(desc(tf_idf)) %>%
@@ -221,14 +226,6 @@ ggraph(bigram_graph, layout = "fr") +
 
 # functions ---------------------------------------------------------------
 
-count_bigrams <- function(dataset) {
-  dataset %>%
-    unnest_tokens(bigram, text, token = "ngrams", n = 2) %>%
-    separate(bigram, c("word1", "word2"), sep = " ") %>%
-    filter(!word1 %in% stop_words$word,
-           !word2 %in% stop_words$word) %>%
-    count(word1, word2, sort = TRUE)
-}
 count_bigrams <- function(dataset) {
   dataset %>%
     unnest_tokens(bigram, text, token = "ngrams", n = 2) %>%
