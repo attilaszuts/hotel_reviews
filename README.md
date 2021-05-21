@@ -1,0 +1,1 @@
+Data can be downloaded also from [kaggle](https://www.kaggle.com/jiashenliu/515k-hotel-reviews-data-in-europe)
