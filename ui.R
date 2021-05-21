@@ -1,6 +1,8 @@
 library(shiny)
 library(shinydashboard)
 library(shinycssloaders)
+library(shinyWidgets)
+
 
 shinyUI(dashboardPage(
   dashboardHeader(title = "Hotel reviews"
@@ -25,7 +27,13 @@ shinyUI(dashboardPage(
         ), # close tabItem 'filter'
       tabItem(
         tabName = 'cloud',
-        withSpinner(uiOutput('wordcloud'), type = 5, color = "#222d32")
+        fluidRow(
+          column(3, 
+                 fluidRow(column(12, h1('here comes some description'))),
+                 fluidRow(column(6, uiOutput('pickerInput')))
+          ),
+          column(9, withSpinner(uiOutput('wordcloud'), type = 5, color = "#222d32"))
+        ) # close fluidRow
       ) # close tabItem 'cloud'
     ) # close tabItems
   ) # close Body
