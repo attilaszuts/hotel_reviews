@@ -11,6 +11,9 @@ library(ggraph)
 library(widyr)
 df <- read_csv('hotel_reviews.csv') %>% clean_names()
 
+df_sample <- df[sample(nrow(df), 100), ]
+write_csv(df_sample, 'hotel_reviews_sample.csv')
+
 skimr::skim(df)
 str(df)
 
